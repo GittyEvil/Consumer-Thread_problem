@@ -16,18 +16,21 @@ Hur programmet ska funka(iden):
     så den kommer behöva vänta på respons eller något från P.
     Buffern spelar som minnesblock för både P och C.
 
-    -
+    -Är lista tom måste C vänta
+    -Är lista full måste P vänta
+
+//för att fatta kommandon
+https://pubs.opengroup.org/onlinepubs/7908799/xsh/pthread.h.html
+https://www.geeksforgeeks.org/multithreading-in-c/
 */
 
-
-int N,bufferSize,timeIntervall;
 
  /*
  Buffer
      Anpassningsbar?
-     kommer hålla alla items
+     kommer hålla alla items från P
+     C kommer kunna ta items från lista
  */
-int buffer[];
 
 //wait funktion
 void Wait() {
@@ -39,7 +42,7 @@ producer thread
     wait funktion
     create funktion mha timeIntervall
 */
-void Producer() {
+void Producer(int Buffer[],int timeIntervall) {
     
 }
 /*
@@ -47,18 +50,38 @@ Consumer thread
     wait funktion
     create funktion
 */
-void Consumer() {
+void Consumer(int Buffer[]) {
+    
+}
 
+int main(/*int argc, char *argv[]*/) {
+    int N,bufferSize,timeIntervall;
+    
+    scanf("%d %d %d",&N,&bufferSize,&timeIntervall);
+    //n antal C + 1 P, lista som håller alla threads
+    phtread_t threads[N + 1];
+
+    int Buffer[bufferSize];
+
+    //skapande av threads
+    pthread_create(threads[0],NULL,Producer,NULL);
+
+    for(int i = 1; i < N;i++) {
+            pthread_create(threads[i],NULL,Producer,NULL);
+    }
+
+
+
+    
+    return 0;
 }
 
 
 
-int main(int argc, char *argv[]) {
 
 
-//ex create Producer(paramtrar);
-
-//Consumer(parametrar);
 
 
-}
+
+
+
