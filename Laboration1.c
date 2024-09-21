@@ -42,20 +42,27 @@ producer thread
     wait funktion
     create funktion mha timeIntervall
 */
-void Producer(int Buffer[],int timeIntervall) {
-    
+void Producer(int Buffer[],int timeIntervall,int counterItems) {
+    //skapandet
+    while(timeIntervall % 100) {
+        int x = 1;
+        Buffer[counterItems] = x;
+        counterItems++;
+    }
 }
 /*
 Consumer thread
     wait funktion
-    create funktion
+    remove funktion
 */
-void Consumer(int Buffer[]) {
-    
+void Consumer(int Buffer[],int counterItems) {
+    int x = 1;
+    Buffer[counterItems] = x;
+    counterItems--;
 }
 
 int main(/*int argc, char *argv[]*/) {
-    int N,bufferSize,timeIntervall;
+    int N,bufferSize,timeIntervall,counterItems;
     
     scanf("%d %d %d",&N,&bufferSize,&timeIntervall);
     //n antal C + 1 P, lista som håller alla threads
