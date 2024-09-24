@@ -22,6 +22,10 @@ Hur programmet ska funka(iden):
 //för att fatta kommandon
 https://pubs.opengroup.org/onlinepubs/7908799/xsh/pthread.h.html
 https://www.geeksforgeeks.org/multithreading-in-c/
+
+
+kör kod med detta kommando  
+    gcc Laboration1.c -o lab1 -pthread
 */
 
 
@@ -32,6 +36,9 @@ https://www.geeksforgeeks.org/multithreading-in-c/
      C kommer kunna ta items från lista
  */
 
+int N,bufferSize,timeIntervall,counterItems = 0;
+
+
 //wait funktion
 void Wait() {
 
@@ -39,15 +46,18 @@ void Wait() {
 
 /*
 producer thread
-    wait funktion
-    create funktion mha timeIntervall
+    wait funktion + timeIntervall för att få väntan rätta
+    create funktion 
 */
-void Producer(int Buffer[],int timeIntervall,int counterItems) {
+void* Producer(void* args) {
     //skapandet
-    while(timeIntervall % 100) {
+    int* Buffer = (int*)args;
+    //ska köra oändligt men bara leverera items varje timeIntervall
+    while(1) {
         int x = 1;
         Buffer[counterItems] = x;
         counterItems++;
+        printf("tillagd: %d\n",x);
     }
 }
 /*
@@ -55,30 +65,51 @@ Consumer thread
     wait funktion
     remove funktion
 */
-void Consumer(int Buffer[],int counterItems) {
+void* Consumer(void* args) {
+    //borttagandet
+    int* Buffer = (int*)args;
     int x = 1;
-    Buffer[counterItems] = x;
-    counterItems--;
+    while(1) {
+        Buffer[counterItems] = x;
+        counterItems--;
+        printf("borttaget: %d\n",x);
+    }
 }
 
-int main(/*int argc, char *argv[]*/) {
-    int N,bufferSize,timeIntervall,counterItems;
-    
+int main() {
     scanf("%d %d %d",&N,&bufferSize,&timeIntervall);
-    //n antal C + 1 P, lista som håller alla threads
-    phtread_t threads[N + 1];
-
+    //threads
+    pthread_t p_Threads[1];
+    pthread_t c_Threads[N]; 
     int Buffer[bufferSize];
 
     //skapande av threads
-    pthread_create(threads[0],NULL,Producer,NULL);
 
+    //skapa 1 Producer
+    for(int i = 0; i < 1;i++) {
+        if(pthread_create(&p_Threads[i],NULL,&Producer,(void*)Buffer) != 0) {
+            perror("error med skapande av P\n");
+        }
+    }
+    //skapa n Consumers
     for(int i = 1; i < N;i++) {
-            pthread_create(threads[i],NULL,Producer,NULL);
+        if(pthread_create(&c_Threads[i],NULL,&Consumer,(void*)Buffer) != 0) {
+            perror("error med skapande av C\n");
+        }
     }
 
+    //behöver en join funktion
+    for(int i= 0; i < N;i++)  {
+        if(pthread_join(c_Threads[i],NULL)!= 0) {
+            perror("error c");
+        }
+    }
 
-
+    for(int i= 0; i < 1;i++)  {
+        if(pthread_join(p_Threads[i],NULL)!= 0) {
+            perror("error p");
+        }
+    }
     
     return 0;
 }
