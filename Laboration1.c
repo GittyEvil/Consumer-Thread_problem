@@ -1,5 +1,6 @@
 #include <pthread.h>
 #include <stdio.h>
+#include <semaphore.h>
 
 /*
 Krav på uppgift:
@@ -41,12 +42,9 @@ kör kod med detta kommando
 int N,bufferSize,timeIntervall,counterItems = 0;
 //sätter igång muex lock
 pthread_mutex_t lock;
-
-
-//wait funktion
-void Wait() {
-
-}
+//sempahore
+sem_t tom;
+sem_t full;
 
 /*
 producer thread
@@ -56,8 +54,11 @@ producer thread
 void* Producer(void* args) {
     //skapandet
     int* Buffer = (int*)args;
+
+    
     //ska köra oändligt men bara leverera items varje timeIntervall
     while(1) {
+        sem_wait(&tom);
         if(counterItems < bufferSize & timeIntervall % 100) {
             pthread_mutex_lock(&lock);
             int x = 1;
@@ -66,6 +67,7 @@ void* Producer(void* args) {
             printf("tillagd: %d\n",x);
             pthread_mutex_unlock(&lock);
         }
+        sem_post(&full);
     }
 }
 /*
@@ -79,6 +81,7 @@ void* Consumer(void* args) {
     int x = 1;
     //while 1 finns för inf loop, men if sats för att testa å se om jag kan fixa segmentation fault
     while(1) {
+        sem_wait(&full);
         if(counterItems >= 0) {
             pthread_mutex_lock(&lock);
             Buffer[counterItems - 1] = x;
@@ -86,10 +89,13 @@ void* Consumer(void* args) {
             printf("borttaget: %d\n",x);
             pthread_mutex_unlock(&lock);
         }
+        sem_post(&tom);
     }
 }
 
 /*
+VART JAG ÄR JUST NU:
+
 jag får nu programmet att funka men får segmentation fault vilket då är minneshantering fel, ser attprogrammet körs så tar C bort mer än P producerar,(tar bort inget från tomt minne) pga av att P inte hinner producera tillräckligt för att C tar bort för fort, måste fixa mutex locks å fixa critical section så enbart en kan jobba i taget å sakta ner Cs jobb
 
 fixa även timeIntervall för P
@@ -103,7 +109,8 @@ int main() {
     pthread_t c_Threads[N]; 
     int Buffer[bufferSize];
 
-    //skapande av threads
+    sem_init(&tom, 0, bufferSize); 
+    sem_init(&full, 0, 0);  
 
     //mutex locks 
     if(pthread_mutex_init(&lock,NULL)!= 0) {
@@ -135,6 +142,8 @@ int main() {
             perror("error p");
         }
     }
+
+    pthread_mutex_destroy(&lock);
     
     return 0;
 }
