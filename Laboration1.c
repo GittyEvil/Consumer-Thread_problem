@@ -1,6 +1,7 @@
 #include <pthread.h>
 #include <stdio.h>
 #include <semaphore.h>
+#include <unistd.h>
 
 /*
 Krav på uppgift:
@@ -59,7 +60,8 @@ void* Producer(void* args) {
     //ska köra oändligt men bara leverera items varje timeIntervall
     while(1) {
         sem_wait(&tom);
-        if(counterItems < bufferSize & timeIntervall % 100) {
+        if(counterItems < bufferSize) {
+            usleep(timeIntervall*100);
             pthread_mutex_lock(&lock);
             int x = 1;
             Buffer[counterItems] = x;
